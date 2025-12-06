@@ -31,7 +31,6 @@ fun PantallaDashboard(
         drawerContent = {
             ModalDrawerSheet(
                 drawerContainerColor = Color(0xFF2C7A90),
-
                 drawerContentColor = Color.White
             ) {
                 Column(
@@ -52,7 +51,7 @@ fun PantallaDashboard(
                         pantallaActual = 1
                         scope.launch { drawerState.close() }
                     }
-                    BotonMenu("Citas", Icons.Default.CalendarToday, pantallaActual == 2) {
+                    BotonMenu("Agendar Cita", Icons.Default.CalendarToday, pantallaActual == 2) {
                         pantallaActual = 2
                         scope.launch { drawerState.close() }
                     }
@@ -84,9 +83,10 @@ fun PantallaDashboard(
         ) { paddingValues ->
             Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
                 when (pantallaActual) {
-                    0 -> PantallaBienvenida(nombreUsuario)
+                    0 -> ContenidoDashboard(viewModel)
                     1 -> PantallaMascotas(viewModel = viewModel)
-                    2 -> Text("Próximamente", modifier = Modifier.align(Alignment.Center))
+                    2 -> PantallaAgendarCita(viewModel)
+
                     else -> Text("Gatoco", modifier = Modifier.align(Alignment.Center))
                 }
             }
