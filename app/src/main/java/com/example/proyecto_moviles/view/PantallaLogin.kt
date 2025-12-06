@@ -1,6 +1,5 @@
 package com.example.proyecto_moviles.view
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -19,20 +18,18 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lint.kotlin.metadata.Visibility
 
 @Composable
 fun PantallaLogin(
-    onLoginSuccess: () -> Unit
+
+    onLoginSuccess: (String, String, String, Boolean, Boolean) -> Unit
 ) {
+
     var esRegistro by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var nombre by remember { mutableStateOf("") }
-
-
     var esVeterinario by remember { mutableStateOf(false) }
-
     var passwordVisible by remember { mutableStateOf(false) }
 
     Column(
@@ -50,19 +47,13 @@ fun PantallaLogin(
             tint = Color(0xFF6200EE)
         )
         Text(
-            text = "GATOCO", // Cambio solicitado: Solo "GATOCO"
+            text = "GATOCO",
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
             color = Color(0xFF6200EE)
         )
-        Text(
-            text = if (esRegistro) "Crea tu cuenta" else "Bienvenido de nuevo",
-            fontSize = 16.sp,
-            color = Color.Gray
-        )
 
         Spacer(modifier = Modifier.height(32.dp))
-
 
         if (esRegistro) {
             OutlinedTextField(
@@ -97,6 +88,7 @@ fun PantallaLogin(
             modifier = Modifier.fillMaxWidth()
         )
 
+
         if (esRegistro) {
             Spacer(modifier = Modifier.height(16.dp))
             Card(
@@ -107,7 +99,7 @@ fun PantallaLogin(
                     Text("Quiero registrarme como:", fontWeight = FontWeight.Bold)
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(selected = !esVeterinario, onClick = { esVeterinario = false })
-                        Text("Cliente (Dueño de mascota)")
+                        Text("Cliente")
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(selected = esVeterinario, onClick = { esVeterinario = true })
@@ -123,8 +115,7 @@ fun PantallaLogin(
         Button(
             onClick = {
 
-
-                onLoginSuccess()
+                onLoginSuccess(email, password, nombre, esVeterinario, esRegistro)
             },
             modifier = Modifier.fillMaxWidth().height(50.dp)
         ) {
@@ -137,7 +128,11 @@ fun PantallaLogin(
         Text(
             text = if (esRegistro) "¿Ya tienes cuenta? Inicia Sesión" else "¿No tienes cuenta? Regístrate",
             color = Color(0xFF6200EE),
-            modifier = Modifier.clickable { esRegistro = !esRegistro }
+            modifier = Modifier.clickable {
+                esRegistro = !esRegistro
+
+                email = ""; password = ""; nombre = ""
+            }
         )
     }
 }
