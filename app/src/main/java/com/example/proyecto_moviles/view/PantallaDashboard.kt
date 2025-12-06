@@ -1,0 +1,126 @@
+package com.example.proyecto_moviles.view
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.proyecto_moviles.viewmodel.MascotaViewModel
+import kotlinx.coroutines.launch
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PantallaDashboard(
+    nombreUsuario: String,
+    viewModel: MascotaViewModel,
+    onCerrarSesion: () -> Unit
+) {
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+    var pantallaActual by remember { mutableStateOf(0) }
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet(
+                drawerContainerColor = Color(0xFF2C7A90),
+
+                drawerContentColor = Color.White
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxHeight().padding(16.dp)
+                ) {
+                    // Encabezado
+                    Text(text = "Hola, $nombreUsuario", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(text = "Cliente", fontSize = 14.sp, color = Color.LightGray)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider(color = Color.White.copy(alpha = 0.3f))
+
+                    // Menú
+                    BotonMenu("Dashboard", Icons.Default.Dashboard, pantallaActual == 0) {
+                        pantallaActual = 0
+                        scope.launch { drawerState.close() }
+                    }
+                    BotonMenu("Mascotas", Icons.Default.Pets, pantallaActual == 1) {
+                        pantallaActual = 1
+                        scope.launch { drawerState.close() }
+                    }
+                    BotonMenu("Citas", Icons.Default.CalendarToday, pantallaActual == 2) {
+                        pantallaActual = 2
+                        scope.launch { drawerState.close() }
+                    }
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    Button(
+                        onClick = onCerrarSesion,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Cerrar Sesión")
+                    }
+                }
+            }
+        }
+    ) {
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = { Text("Gatoco") },
+                    navigationIcon = {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menú")
+                        }
+                    }
+                )
+            }
+        ) { paddingValues ->
+            Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
+                when (pantallaActual) {
+                    0 -> PantallaBienvenida(nombreUsuario)
+                    1 -> PantallaMascotas(viewModel = viewModel)
+                    2 -> Text("Próximamente", modifier = Modifier.align(Alignment.Center))
+                    else -> Text("Gatoco", modifier = Modifier.align(Alignment.Center))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun BotonMenu(texto: String, icono: ImageVector, seleccionado: Boolean, onClick: () -> Unit) {
+    NavigationDrawerItem(
+        label = { Text(texto) },
+        icon = { Icon(icono, contentDescription = null) },
+        selected = seleccionado,
+        onClick = onClick,
+        colors = NavigationDrawerItemDefaults.colors(
+            unselectedContainerColor = Color.Transparent,
+            unselectedTextColor = Color.White,
+            unselectedIconColor = Color.White,
+            selectedContainerColor = Color.White.copy(alpha = 0.2f),
+            selectedTextColor = Color.White,
+            selectedIconColor = Color.White
+        ),
+        modifier = Modifier.padding(vertical = 4.dp)
+    )
+}
+
+@Composable
+fun PantallaBienvenida(nombre: String) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(Icons.Default.Pets, contentDescription = null, modifier = Modifier.size(80.dp), tint = Color(0xFF2C7A90))
+        Text("Bienvenido, $nombre", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2C7A90))
+    }
+}
