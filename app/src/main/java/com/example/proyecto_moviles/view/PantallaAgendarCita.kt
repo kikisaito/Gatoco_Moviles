@@ -1,24 +1,15 @@
 package com.example.proyecto_moviles.view
 
-import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Pets
-import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,122 +18,140 @@ import com.example.proyecto_moviles.viewmodel.MascotaViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantallaAgendarCita(viewModel: MascotaViewModel) {
-    val context = LocalContext.current
-    val listaMascotas by viewModel.listaMascotas.collectAsState(initial = emptyList())
 
 
-    var mascotaSeleccionada by remember { mutableStateOf("") }
-    var servicioSeleccionado by remember { mutableStateOf("") }
+    var mascotaNombre by remember { mutableStateOf("") }
+    var servicio by remember { mutableStateOf("") }
     var fecha by remember { mutableStateOf("") }
     var hora by remember { mutableStateOf("") }
 
 
-    val servicios = listOf("Consulta General", "Vacunación", "Desparasitación", "Cirugía", "Estética/Baño")
+    var veterinarioSeleccionado by remember { mutableStateOf("") }
+    var mostrarVeterinarioMenu by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState())
-    ) {
-        Text("Nueva Cita", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2C7A90))
-        Text("Completa los datos para agendar", color = Color.Gray)
+    // Obtener la lista de nombres de veterinarios del ViewModel
+    val listaNombresVeterinarios by viewModel.listaNombresVeterinarios.collectAsState(initial = emptyList())
 
+    // Estados para los menús desplegables
+    var mostrarServicioMenu by remember { mutableStateOf(false) }
+    var mostrarMascotaMenu by remember { mutableStateOf(false) }
+
+    // Obtener las mascotas para el selector
+    val listaMascotas by viewModel.listaMascotas.collectAsState(initial = emptyList())
+    val servicios = listOf("Consulta General", "Vacunación", "Cirugía Menor", "Estética")
+
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+
+        Text("Agendar Nueva Cita", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Text("Selecciona los detalles de tu consulta", color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 1. SELECCIONAR MASCOTA
-        Text("1. ¿Quién es el paciente?", fontWeight = FontWeight.Bold)
-        Spacer(modifier = Modifier.height(8.dp))
 
-        if (listaMascotas.isEmpty()) {
-            Text("No tienes mascotas registradas. Ve a la sección 'Mascotas' primero.", color = Color.Red)
-        } else {
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(listaMascotas) { mascota ->
-                    FilterChip(
-                        selected = mascotaSeleccionada == mascota.nombre,
-                        onClick = { mascotaSeleccionada = mascota.nombre },
-                        label = { Text(mascota.nombre) },
-                        leadingIcon = if (mascotaSeleccionada == mascota.nombre) {
-                            { Icon(Icons.Default.Check, contentDescription = null) }
-                        } else null
+        Box(modifier = Modifier.fillMaxWidth()) {
+            OutlinedTextField(
+                value = mascotaNombre,
+                onValueChange = { },
+                label = { Text("Mascota") },
+                readOnly = true,
+                trailingIcon = { Icon(Icons.Default.ArrowDropDown, null, Modifier.clickable { mostrarMascotaMenu = true }) },
+                leadingIcon = { Icon(Icons.Default.Person, null) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            DropdownMenu(expanded = mostrarMascotaMenu, onDismissRequest = { mostrarMascotaMenu = false }) {
+                listaMascotas.forEach { mascota ->
+                    DropdownMenuItem(
+                        text = { Text(mascota.nombre) },
+                        onClick = {
+                            mascotaNombre = mascota.nombre
+                            mostrarMascotaMenu = false
+                        }
                     )
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // 2. SELECCIONAR SERVICIO
-        Text("2. Tipo de Servicio", fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Usamos un RadioButton group simple
-        servicios.forEach { servicio ->
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .height(40.dp)
-                    .selectable(
-                        selected = (servicioSeleccionado == servicio),
-                        onClick = { servicioSeleccionado = servicio }
+        // 2. Selector de Servicio
+        Box(modifier = Modifier.fillMaxWidth()) {
+            OutlinedTextField(
+                value = servicio,
+                onValueChange = { },
+                label = { Text("Servicio Requerido") },
+                readOnly = true,
+                trailingIcon = { Icon(Icons.Default.ArrowDropDown, null, Modifier.clickable { mostrarServicioMenu = true }) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            DropdownMenu(expanded = mostrarServicioMenu, onDismissRequest = { mostrarServicioMenu = false }) {
+                servicios.forEach { item ->
+                    DropdownMenuItem(
+                        text = { Text(item) },
+                        onClick = {
+                            servicio = item
+                            mostrarServicioMenu = false
+                        }
                     )
-                    .padding(horizontal = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                RadioButton(
-                    selected = (servicioSeleccionado == servicio),
-                    onClick = { servicioSeleccionado = servicio }
-                )
-                Text(text = servicio, modifier = Modifier.padding(start = 8.dp))
+                }
             }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+
+
+        Box(modifier = Modifier.fillMaxWidth()) {
+            OutlinedTextField(
+                value = veterinarioSeleccionado,
+                onValueChange = { },
+                label = { Text("Elegir Veterinario") },
+                readOnly = true,
+                trailingIcon = { Icon(Icons.Default.ArrowDropDown, null, Modifier.clickable { mostrarVeterinarioMenu = true }) },
+                leadingIcon = { Icon(Icons.Default.Person, null) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            DropdownMenu(expanded = mostrarVeterinarioMenu, onDismissRequest = { mostrarVeterinarioMenu = false }) {
+                listaNombresVeterinarios.forEach { nombre ->
+                    DropdownMenuItem(
+                        text = { Text(nombre) },
+                        onClick = {
+                            veterinarioSeleccionado = nombre
+                            mostrarVeterinarioMenu = false
+                        }
+                    )
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 4. Campos de Fecha y Hora
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            OutlinedTextField(
+                value = fecha,
+                onValueChange = { fecha = it },
+                label = { Text("Fecha (DD/MM/AAAA)") },
+                leadingIcon = { Icon(Icons.Default.CalendarToday, null) },
+                modifier = Modifier.weight(1f)
+            )
+            OutlinedTextField(
+                value = hora,
+                onValueChange = { hora = it },
+                label = { Text("Hora (HH:MM)") },
+                leadingIcon = { Icon(Icons.Default.CalendarToday, null) },
+                modifier = Modifier.weight(1f)
+            )
         }
 
         Spacer(modifier = Modifier.height(24.dp))
-
-        Text("3. ¿Cuándo?", fontWeight = FontWeight.Bold)
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = fecha,
-            onValueChange = { fecha = it },
-            label = { Text("Fecha (Ej: 15/12/2025)") },
-            leadingIcon = { Icon(Icons.Default.CalendarToday, contentDescription = null) },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = hora,
-            onValueChange = { hora = it },
-            label = { Text("Hora (Ej: 10:30 AM)") },
-            leadingIcon = { Icon(Icons.Default.Schedule, contentDescription = null) },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
 
 
         Button(
             onClick = {
-                if (mascotaSeleccionada.isNotEmpty() && servicioSeleccionado.isNotEmpty() && fecha.isNotEmpty() && hora.isNotEmpty()) {
-                    viewModel.agendarCita(mascotaSeleccionada, servicioSeleccionado, fecha, hora)
-                    Toast.makeText(context, "¡Cita Agendada con Éxito!", Toast.LENGTH_LONG).show()
+                if (mascotaNombre.isNotBlank() && servicio.isNotBlank() && fecha.isNotBlank() && hora.isNotBlank() && veterinarioSeleccionado.isNotBlank()) {
+                    viewModel.agendarCita(mascotaNombre, servicio, fecha, hora, veterinarioSeleccionado)
 
-
-                    mascotaSeleccionada = ""
-                    servicioSeleccionado = ""
-                    fecha = ""
-                    hora = ""
-                } else {
-                    Toast.makeText(context, "Por favor completa todos los campos", Toast.LENGTH_SHORT).show()
+                    mascotaNombre = ""; servicio = ""; fecha = ""; hora = ""; veterinarioSeleccionado = ""
                 }
             },
-            modifier = Modifier.fillMaxWidth().height(50.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2C7A90))
+            modifier = Modifier.fillMaxWidth().height(50.dp)
         ) {
-            Text("Confirmar Cita", fontSize = 18.sp)
+            Text("Confirmar Cita Médica")
         }
     }
 }

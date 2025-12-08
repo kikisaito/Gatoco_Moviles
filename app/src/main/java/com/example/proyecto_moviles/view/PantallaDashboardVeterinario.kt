@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -16,14 +17,15 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PantallaDashboard(
+fun PantallaDashboardVeterinario(
     nombreUsuario: String,
     viewModel: MascotaViewModel,
-    onCerrarSesion: () -> Unit,
-    esVeterinario: Boolean
+    onCerrarSesion: () -> Unit
 ) {
+
     LaunchedEffect(nombreUsuario) {
-        viewModel.establecerUsuario(nombreUsuario, esVet = false)
+
+        viewModel.establecerUsuario(nombreUsuario, esVet = true)
     }
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -34,28 +36,30 @@ fun PantallaDashboard(
     val pendientes by viewModel.citasPendientes.collectAsState()
     val completadas by viewModel.citasCompletadas.collectAsState()
 
+    val colorMenu = Color(0xFF1A237E)
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(
-                drawerContainerColor = Color(0xFF2C7A90),
+                drawerContainerColor = colorMenu,
                 drawerContentColor = Color.White
             ) {
                 Column(modifier = Modifier.fillMaxHeight().padding(16.dp)) {
-                    Text(text = "Hola, $nombreUsuario", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                    Text(text = "Cliente", fontSize = 14.sp, color = Color.LightGray)
+                    Text(text = nombreUsuario, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(text = "Veterinario", fontSize = 14.sp, color = Color.LightGray)
                     Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = Color.White.copy(alpha = 0.3f))
+                    HorizontalDivider(color = Color.White.copy(alpha = 0.2f))
 
-                    BotonMenu("Dashboard", Icons.Default.Dashboard, pantallaActual == 0) {
+                    BotonMenuVet("Dashboard", Icons.Default.Dashboard, pantallaActual == 0) {
                         pantallaActual = 0
                         scope.launch { drawerState.close() }
                     }
-                    BotonMenu("Mascotas", Icons.Default.Pets, pantallaActual == 1) {
+                    BotonMenuVet("Gestionar Pacientes", Icons.Default.FolderShared, pantallaActual == 1) {
                         pantallaActual = 1
                         scope.launch { drawerState.close() }
                     }
-                    BotonMenu("Agendar Cita", Icons.Default.CalendarToday, pantallaActual == 2) {
+                    BotonMenuVet("Historial de Citas", Icons.Default.History, pantallaActual == 2) {
                         pantallaActual = 2
                         scope.launch { drawerState.close() }
                     }
@@ -76,10 +80,10 @@ fun PantallaDashboard(
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
-                    title = { Text("Gatoco") },
+                    title = { Text("Panel Veterinario", color = colorMenu, fontWeight = FontWeight.Bold) },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menú")
+                            Icon(Icons.Default.Menu, contentDescription = "Menú", tint = colorMenu)
                         }
                     }
                 )
@@ -94,20 +98,23 @@ fun PantallaDashboard(
                             pendientes = pendientes,
                             completadas = completadas,
                             onDeleteCita = { cita -> viewModel.eliminarCita(cita) },
-                            onEditCita = { cita -> /* Lógica futura para editar */ },
-                            puedeAtender = false
+                            onEditCita = { },
+                            puedeAtender = true,
+                            onAtenderCita = { c, d, t -> viewModel.atenderCita(c, d, t) }
                         )
                     }
-                    1 -> PantallaMascotas(viewModel = viewModel)
-                    2 -> PantallaAgendarCita(viewModel = viewModel)
+                    1 -> PantallaGestionarPacientes(viewModel)
+                    2 -> Text("Historial Avanzado (En construcción)", modifier = Modifier.align(
+                        Alignment.Center))
                 }
             }
         }
     }
 }
 
+
 @Composable
-fun BotonMenu(texto: String, icono: ImageVector, seleccionado: Boolean, onClick: () -> Unit) {
+fun BotonMenuVet(texto: String, icono: ImageVector, seleccionado: Boolean, onClick: () -> Unit) {
     NavigationDrawerItem(
         label = { Text(texto) },
         icon = { Icon(icono, contentDescription = null) },

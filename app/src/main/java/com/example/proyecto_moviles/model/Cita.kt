@@ -10,5 +10,11 @@ data class Cita(
     val servicio: String,
     val fecha: String,
     val hora: String,
-    val estado: String = "Pendiente" //
+    val estado: String = "Pendiente",
+
+    val diagnostico: String? = null,
+    val tratamiento: String? = null,
+
+
+    val veterinarioAsignado: String
 )

@@ -5,7 +5,9 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
+
 
 @Dao
 interface MascotaDao {
@@ -22,4 +24,8 @@ interface MascotaDao {
 
     @Query("SELECT * FROM mascotas WHERE id = :id")
     suspend fun obtenerPorId(id: Int): Mascota?
+
+    @Update
+    suspend fun actualizar(mascota: Mascota)
+
 }
